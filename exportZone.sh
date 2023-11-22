@@ -79,7 +79,9 @@ getZoneId () {
 # getRecordSets
 # #################################
 getRecordSets () {
-   ${AWS} --profile ${AWS_PROFILE} route53 list-resource-record-sets --hosted-zone-id ${ZONE_ID} | jq -jr '.ResourceRecordSets[] | "\(.Name) \t\(.TTL) \t\(.Type) \t\(.ResourceRecords[]?.Value)\n"'
+   AWS_ZONE_FILE=AWS_ZONE.${DOMAIN}
+   ${AWS} --profile ${AWS_PROFILE} route53 list-resource-record-sets --hosted-zone-id ${ZONE_ID} > ${AWS_ZONE_FILE}
+   ${CAT} ${AWS_ZONE_FILE} | jq -jr '.ResourceRecordSets[] | "\(.Name) \t\(.TTL? // 60) \t\(.Type) \t\(.ResourceRecords[]?.Value // .AliasTarget?.DNSName)\n"'
 }
 
 # ###########################################################################
